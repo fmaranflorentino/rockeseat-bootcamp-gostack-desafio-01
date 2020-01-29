@@ -2,7 +2,20 @@ import { Router } from 'express';
 
 const routes = new Router();
 
-let projects = [];
+const projects = [];
+
+function verifyProjectExists(req, res, next) {
+  const { id } = req.params;
+
+  const hasId = projects.find(project => project.id == id);
+
+  if (!hasId) {
+    return res.status(400)
+    .json({ error: "Project does not exists." });
+  }
+
+  next();
+}
 
 routes.get('/projects', (req, res) => {
   return res.json({ data: projects });
@@ -15,7 +28,7 @@ routes.post('/projects', (req, res) => {
   return res.json(projects);
 });
 
-routes.put('/projects/:id', (req, res) => {
+routes.put('/projects/:id', verifyProjectExists, (req, res) => {
   const { id } = req.params;
   const { title, tasks } = req.body;
   const edittedProject = { title, tasks };
@@ -30,7 +43,7 @@ routes.put('/projects/:id', (req, res) => {
   return res.json(projects);
 });
 
-routes.delete('/projects/:id', (req, res) => {
+routes.delete('/projects/:id', verifyProjectExists, (req, res) => {
   const { id } = req.params;
   
   const projectIndex = projects.findIndex(project => project.id === id);
