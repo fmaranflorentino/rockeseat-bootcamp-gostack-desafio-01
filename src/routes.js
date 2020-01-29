@@ -1,65 +1,16 @@
 import { Router } from 'express';
-
+import projectsRoutes from './routes/projects';
 const routes = new Router();
 
-const projects = [];
+let requests = 0;
 
-function verifyProjectExists(req, res, next) {
-  const { id } = req.params;
-
-  const hasId = projects.find(project => project.id == id);
-
-  if (!hasId) {
-    return res.status(400)
-    .json({ error: "Project does not exists." });
-  }
+routes.use((req, res, next) => {
+  requests++;
+  console.log(`Number of request send until now ${requests}`);
 
   next();
-}
-
-routes.get('/projects', (req, res) => {
-  return res.json({ data: projects });
 });
 
-routes.post('/projects', (req, res) => {
-  const { id, title, tasks } = req.body;
-  projects.push({ id, title, tasks })
-
-  return res.json(projects);
-});
-
-routes.put('/projects/:id', verifyProjectExists, (req, res) => {
-  const { id } = req.params;
-  const { title, tasks } = req.body;
-  const edittedProject = { title, tasks };
-
-  projects = projects.map((project) => {
-    if (project.id === id) {
-      project = { ...edittedProject, id };
-    }
-    return project;
-  })
-
-  return res.json(projects);
-});
-
-routes.delete('/projects/:id', verifyProjectExists, (req, res) => {
-  const { id } = req.params;
-  
-  const projectIndex = projects.findIndex(project => project.id === id);
-  projects.splice(projectIndex, 1)
-
-  return res.send();
-});
-
-routes.post('/projects/:id/tasks', (req, res) => {
-  const { id } = req.params;
-  const { title } = req.body;
-
-  const projectIndex = projects.findIndex(project => project.id === id);
-  projects[projectIndex].tasks.push(title);
-
-  return res.json(projects);
-});
+routes.use('/projects', projectsRoutes);
 
 export default routes;
